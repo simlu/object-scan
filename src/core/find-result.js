@@ -15,12 +15,13 @@ export default (kwargs, ctx) => {
     };
   }
   if (ctx.rtn === 'count') {
-    let result = 0;
+    const result = { value: 0 };
     return {
+      value: result,
       onMatch: () => {
-        result += 1;
+        result.value += 1;
       },
-      get: () => result
+      get: () => result.value
     };
   }
   if (ctx.rtn === 'sum') {
@@ -41,6 +42,12 @@ export default (kwargs, ctx) => {
       }
       if (Array.isArray(ctx.rtn)) {
         return () => result.push(ctx.rtn.map((rtn) => kwargs[rtn]));
+      }
+      if (ctx.rtn === 'key') {
+        return () => result.push(kwargs.getKey());
+      }
+      if (ctx.rtn === 'value') {
+        return () => result.push(kwargs.getValue());
       }
       return () => result.push(kwargs[ctx.rtn]);
     })(),
