@@ -18,9 +18,6 @@ export default (kwargs, ctx) => {
     const result = { value: 0 };
     return {
       value: result,
-      onMatch: () => {
-        result.value += 1;
-      },
       get: () => result.value
     };
   }
