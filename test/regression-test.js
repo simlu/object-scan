@@ -20,11 +20,18 @@ const Worker = async () => {
     compute.on('message', () => resolve());
   });
   let resolve;
+  let reject;
   compute.on('message', (result) => resolve(result));
+  compute.on('exit', () => {
+    if (reject) {
+      reject(new Error('Worker exited unexpectedly'));
+    }
+  });
   return {
     exec: async (kwargs) => {
-      const result = new Promise((r) => {
+      const result = new Promise((r, j) => {
         resolve = r;
+        reject = j;
       });
       compute.send(kwargs);
       return result;
@@ -104,6 +111,20 @@ const execute = async () => {
       worker1.exec({ ...kwargs, useLocal: true }),
       worker2.exec({ ...kwargs, useLocal: false })
     ]);
+    // A worker may report an error (e.g. an invalid regex needle that both
+    // implementations reject). If both implementations throw the same error,
+    // there is no mismatch — treat it as a pass and skip the comparison.
+    if (signatureLocal.error || signatureReleased.error) {
+      if (signatureLocal.error !== signatureReleased.error) {
+        log([
+          `Mismatch for seed: ${rng.seed}`,
+          `(local error: ${signatureLocal.error},`,
+          `released error: ${signatureReleased.error})`
+        ].join(' '));
+      }
+      // eslint-disable-next-line no-continue
+      continue;
+    }
     timeLocal.add(signatureLocal.duration);
     timeReleased.add(signatureReleased.duration);
     delete signatureLocal.duration;
