@@ -14,7 +14,7 @@ const WARMUP = 200; // throwaway iterations before timing
 const MIN_BATCH_MS = 20; // minimum wall-clock duration of a timed batch
 const SAMPLES = 5; // timed batches; median is reported
 
-const median = (arr) => {
+export const median = (arr) => {
   const s = [...arr].sort((a, b) => a - b);
   const mid = Math.floor(s.length / 2);
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
